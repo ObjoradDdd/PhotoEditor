@@ -74,5 +74,6 @@ void sequentially() {
 
 
 int main() {
+    cout << "start";
     sequentially();
 }
