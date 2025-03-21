@@ -1,3 +1,4 @@
 C:/Users/Atrun/CLionProjects/fe/cmake-build-debug/CMakeFiles/fe.dir
+C:/Users/Atrun/CLionProjects/fe/cmake-build-debug/CMakeFiles/openmp_test_clion.dir
 C:/Users/Atrun/CLionProjects/fe/cmake-build-debug/CMakeFiles/edit_cache.dir
 C:/Users/Atrun/CLionProjects/fe/cmake-build-debug/CMakeFiles/rebuild_cache.dir
