@@ -12,9 +12,6 @@
 
 using namespace std;
 
-unsigned char solarize(unsigned char value) {
-    return value;
-}
 
 unsigned char posterize(unsigned char value, int levels = 5) {
     float step = 255.0f / (levels - 1);
@@ -46,8 +43,8 @@ double sequentially(int repeat = 1, int code = 4) {
         clock_t currentTime = clock();
         for (int g = 0; g < repeat; ++g) {
             for (int i = 0; i < width * height * channels; ++i) {
-                if ((int) Solarization[i] > 128) {
-                    Solarization[i] = (unsigned char) (255 - (int) Solarization[i]);
+                if (Solarization[i] > 128) {
+                    Solarization[i] = (255 - Solarization[i]);
                 }
             }
         }
@@ -114,8 +111,8 @@ double openMp(int repeat = 1, int code = 4) {
         for (int g = 0; g < repeat; ++g) {
 #pragma omp parallel for
             for (int i = 0; i < width * height * channels; ++i) {
-                if ((int) Solarization[i] > 128) {
-                    Solarization[i] = (unsigned char) (255 - (int) Solarization[i]);
+                if (Solarization[i] > 128) {
+                    Solarization[i] = 255 - Solarization[i];
                 }
             }
         }
@@ -184,11 +181,11 @@ double vectorize(int repeat = 1, int code = 4) {
             __m256i full255_16 = _mm256_set1_epi8(255);
 
             for (int i = 0; i < width * channels * height / 32 * 32 - 32; i += 32) {
-                __m256i bytes = _mm256_lddqu_si256((__m256i const *) &Solarization[i]);
-
-                __m256i mask = _mm256_cmpgt_epi8(bytes, threshold16);
+                __m256i bytes = _mm256_load_si256((__m256i const *) &Solarization[i]);
 
                 __m256i subtracted = _mm256_sub_epi8(full255_16, bytes);
+
+                __m256i mask = _mm256_cmpeq_epi8(_mm256_max_epu8(bytes, threshold16), bytes);
 
                 __m256i blended16 = _mm256_blendv_epi8(bytes, subtracted, mask);
 
@@ -291,7 +288,7 @@ double vectorize(int repeat = 1, int code = 4) {
 }
 
 int main() {
-    printf("vectorize: %f milliseconds\n", vectorize(10, 4));
-    printf("sequentially: %f milliseconds\n", sequentially(10, 4));
-    printf("openMp: %f milliseconds\n", openMp(10, 4));
+    printf("vectorize: %f milliseconds\n", vectorize(1, 4));
+    printf("sequentially: %f milliseconds\n", sequentially(1, 4));
+    printf("openMp: %f milliseconds\n", openMp(1, 4));
 }
