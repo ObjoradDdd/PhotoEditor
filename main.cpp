@@ -7,8 +7,8 @@
 #include <cstdint>
 #include <x86intrin.h>
 #include <immintrin.h>
-#include <stdio.h>
-#include <time.h>
+#include <cstdio>
+#include <ctime>
 
 using namespace std;
 
@@ -242,10 +242,10 @@ double vectorize(int repeat = 1, int code = 4) {
         clock_t currentTime = clock();
         const int pixels = width * height;
         for (int g = 0; g < repeat; ++g) {
-            const __m256 r_coef = _mm256_setr_ps(0.393f, 0.349f, 0.272f, 0.0f, 0.393f, 0.349f, 0.272f, 0.0f);
-            const __m256 g_coef = _mm256_setr_ps(0.769f, 0.686f, 0.534f, 0.0f, 0.769f, 0.686f, 0.534f, 0.0f);
-            const __m256 b_coef = _mm256_setr_ps(0.189f, 0.168f, 0.131f, 0.0f, 0.189f, 0.168f, 0.131f, 0.0f);
-            const __m256 max_val = _mm256_set1_ps(255.0f);
+            const __m128 r_coef = _mm_setr_ps(0.393f, 0.349f, 0.272f, 0.0f);
+            const __m128 g_coef = _mm_setr_ps(0.769f, 0.686f, 0.534f, 0.0f);
+            const __m128 b_coef = _mm_setr_ps(0.189f, 0.168f, 0.131f, 0.0f);
+            const __m128 max_val = _mm_set1_ps(255.0f);
 
 
             for (int i = 0; i < pixels; i++) {
@@ -255,20 +255,20 @@ double vectorize(int repeat = 1, int code = 4) {
                 unsigned char G = sepia[idx + 1];
                 unsigned char B = sepia[idx + 2];
 
-                __m256 r_vec = _mm256_set1_ps((float) R);
-                __m256 g_vec = _mm256_set1_ps((float) G);
-                __m256 b_vec = _mm256_set1_ps((float) B);
+                __m128 r_vec = _mm_set1_ps((float) R);
+                __m128 g_vec = _mm_set1_ps((float) G);
+                __m128 b_vec = _mm_set1_ps((float) B);
 
-                __m256 r_result = _mm256_mul_ps(r_vec, r_coef);
-                __m256 g_result = _mm256_mul_ps(g_vec, g_coef);
-                __m256 b_result = _mm256_mul_ps(b_vec, b_coef);
+                __m128 r_result = _mm_mul_ps(r_vec, r_coef);
+                __m128 g_result = _mm_mul_ps(g_vec, g_coef);
+                __m128 b_result = _mm_mul_ps(b_vec, b_coef);
 
-                __m256 sum = _mm256_add_ps(_mm256_add_ps(r_result, g_result), b_result);
+                __m128 sum = _mm_add_ps(_mm_add_ps(r_result, g_result), b_result);
 
-                __m256 clamped = _mm256_min_ps(sum, max_val);
+                __m128 clamped = _mm_min_ps(sum, max_val);
 
                 float results[4];
-                _mm256_storeu_ps(results, clamped);
+                _mm_storeu_ps(results, clamped);
 
                 sepia[idx] = (unsigned char) int(results[0]);
                 sepia[idx + 1] = (unsigned char) int(results[1]);
@@ -288,7 +288,7 @@ double vectorize(int repeat = 1, int code = 4) {
 }
 
 int main() {
-    printf("vectorize: %f milliseconds\n", vectorize(1, 4));
-    printf("sequentially: %f milliseconds\n", sequentially(1, 4));
+    printf("vectorize: %f milliseconds\n", vectorize(1, 3));
+    printf("sequentially: %f milliseconds\n", sequentially(1, 3));
     printf("openMp: %f milliseconds\n", openMp(1, 4));
 }
